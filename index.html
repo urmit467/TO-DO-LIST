@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAILY TASKS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+
+        :root {
+            --primary: #7c3aed;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+
+        }
+
+        .overall {
+            background-image: url(Image.jpg);
+            min-height: 98vh;
+            background-position: center;
+            min-width: 100vh;
+            margin: -37px;
+
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(45deg, var(--darker), var(--dark));
+            color: var(--light);
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            position: absolute;
+            margin-top: 50px;
+            margin-left: 170px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            align-items: start;
+            /* background: rgba(255, 255, 255, 0.05); */
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.7); /* Black with opacity */
+        }
+
+        .content-wrapper {
+            grid-column: 1 / 2;
+        }
+
+        .chart-column {
+            grid-column: 2 / 3;
+            position: sticky;
+            top: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        #dateTime {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s ease;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        #taskInput {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--light);
+            font-size: 1.1rem;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        #taskList {
+            display: grid;
+            gap: 1rem;
+            /* Remove margin-bottom: 2rem; */
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .task-content {
+            flex: 1;
+            margin-left: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .task-text {
+            cursor: pointer;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .task-actions button {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .delete-btn {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: #94a3b8;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+            }
+
+            .chart-column {
+                grid-column: 1 / 2;
+                position: static;
+            }
+
+            #taskList {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overall">
+        <div class="container">
+            <div class="content-wrapper">
+                <div class="header">
+                    <h1>DAILY TASKS</h1>
+                    <div id="dateTime"></div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+
+                <div class="input-section">
+                    <input type="text" id="taskInput" placeholder="What's your next cosmic task?">
+                    <button onclick="addTask()"><i class="fas fa-plus"></i> Add Task</button>
+                </div>
+
+                <ul id="taskList"></ul>
+
+                <div class="stats">
+                    <span>Total Tasks: <span id="totalTasks">0</span></span>
+                    <span>Completed: <span id="completedTasks">0</span></span>
+                </div>
+            </div>
+
+            <div class="chart-column">
+                <div class="chart-container">
+                    <canvas id="taskChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTasks();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+        });
+
+        let tasks = [];
+        let taskChart = null;
+
+        function updateStats() {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+
+            // Update progress bar
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            document.querySelector('.progress-fill').style.width = `${progress}%`;
+
+            // Update statistics display
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+
+            // Update chart data if chart exists
+            if (taskChart) {
+                taskChart.data.datasets[0].data = [completedTasks, totalTasks - completedTasks];
+                taskChart.update();
+            }
+        }
+
+        function initializeChart() {
+            const ctx = document.getElementById('taskChart').getContext('2d');
+            taskChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#f8fafc',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleFont: { size: 16 },
+                            bodyFont: { size: 14 },
+                            padding: 12
+                        }
+                    }
+                }
+            });
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (!taskText) return;
+
+            const newTask = {
+                id: Date.now(),
+                text: taskText,
+                completed: false,
+                createdAt: new Date()
+            };
+
+            tasks.push(newTask);
+            taskInput.value = '';
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const taskItem = document.createElement('li');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <i class="fas fa-grip-vertical"></i>
+                    <div class="task-content">
+                        <span class="task-text ${task.completed ? 'completed' : ''}" 
+                            onclick="toggleTask(${task.id})">
+                            ${task.text}
+                        </span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="delete-btn" onclick="deleteTask(${task.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                taskList.appendChild(taskItem);
+            });
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        function toggleTask(id) {
+            tasks = tasks.map(task =>
+                task.id === id ? { ...task, completed: !task.completed } : task
+            );
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const storedTasks = localStorage.getItem('tasks');
+            tasks = storedTasks ? JSON.parse(storedTasks) : [];
+            initializeChart();
+            renderTasks();
+            updateStats();
+        }
+
+        function updateDateTime() {
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('dateTime').textContent =
+                new Date().toLocaleDateString('en-US', options);
+        }
+    </script>
+</body>
+
+</html>
